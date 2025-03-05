@@ -11,7 +11,7 @@ public class twentyfourCardApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(twentyfourCardApplication.class.getResource("24card.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 520, 280);
+        Scene scene = new Scene(fxmlLoader.load(), 520, 350);
         stage.setTitle("24 Card the game");
         stage.setScene(scene);
         stage.show();
