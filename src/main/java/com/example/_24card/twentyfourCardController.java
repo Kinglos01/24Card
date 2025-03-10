@@ -45,52 +45,65 @@ public class twentyfourCardController {
     @FXML
     protected void onRefreshButtonClick() {
 
-        // Finding the cards for the hand the player will use
+        equationText.setText("");
 
-        for (int i = 0; i < randomNumSelector.length; i++) {
-            Random randomCardSelector = new Random();
-            randomNumSelector[i]= randomCardSelector.nextInt(52);
-            if(i == 0){card1 = randomNumSelector[i];}
-            else if(i == 1){card2 = randomNumSelector[i];}
-            else if(i == 2){card3 = randomNumSelector[i];}
-            else{card4 = randomNumSelector[i];}
+        try{
+
+            winnerLabel.setText("Let's Begin!");
+
+            // Finding the cards for the hand the player will use
+
+            for (int i = 0; i < randomNumSelector.length; i++) {
+                Random randomCardSelector = new Random();
+                randomNumSelector[i] = randomCardSelector.nextInt(52);
+                if (i == 0) {
+                    card1 = randomNumSelector[i];
+                } else if (i == 1) {
+                    card2 = randomNumSelector[i];
+                } else if (i == 2) {
+                    card3 = randomNumSelector[i];
+                } else {
+                    card4 = randomNumSelector[i];
+                }
+            }
+
+            hand.cardfiller();
+            hand.cardNumberAllocator();
+
+            // Initializing the map so I can fetch values
+            handMap.put(hand.numValueOfDeck[card1], 0);
+            handMap.put(hand.numValueOfDeck[card2], 0);
+            handMap.put(hand.numValueOfDeck[card3], 0);
+            handMap.put(hand.numValueOfDeck[card4], 0);
+
+
+            // Creating Map keys for the 4 selected cards
+            handMap.put(hand.numValueOfDeck[card1], handMap.get(hand.numValueOfDeck[card1]) + 1);
+            handMap.put(hand.numValueOfDeck[card2], handMap.get(hand.numValueOfDeck[card2]) + 1);
+            handMap.put(hand.numValueOfDeck[card3], handMap.get(hand.numValueOfDeck[card3]) + 1);
+            handMap.put(hand.numValueOfDeck[card4], handMap.get(hand.numValueOfDeck[card4]) + 1);
+
+
+            String card1Path = hand.deck[card1];
+            String card2Path = hand.deck[card2];
+            String card3Path = hand.deck[card3];
+            String card4Path = hand.deck[card4];
+
+            Image card1Image = new Image(getClass().getResource(card1Path).toExternalForm());
+            card1View.setImage(card1Image);
+
+            Image card2Image = new Image(getClass().getResource(card2Path).toExternalForm());
+            card2View.setImage(card2Image);
+
+            Image card3Image = new Image(getClass().getResource(card3Path).toExternalForm());
+            card3View.setImage(card3Image);
+
+            Image card4Image = new Image(getClass().getResource(card4Path).toExternalForm());
+            card4View.setImage(card4Image);
+
+        }catch (Exception e){
+            e.printStackTrace();
         }
-
-        hand.cardfiller();
-        hand.cardNumberAllocator();
-
-        // Initializing the map so I can fetch values
-        handMap.put(hand.numValueOfDeck[card1],0);
-        handMap.put(hand.numValueOfDeck[card2],0);
-        handMap.put(hand.numValueOfDeck[card3],0);
-        handMap.put(hand.numValueOfDeck[card4],0);
-
-
-        // Creating Map keys for the 4 selected cards
-        handMap.put(hand.numValueOfDeck[card1],handMap.get(hand.numValueOfDeck[card1])+1);
-        handMap.put(hand.numValueOfDeck[card2],handMap.get(hand.numValueOfDeck[card2])+1);
-        handMap.put(hand.numValueOfDeck[card3],handMap.get(hand.numValueOfDeck[card3])+1);
-        handMap.put(hand.numValueOfDeck[card4],handMap.get(hand.numValueOfDeck[card4])+1);
-
-
-        String card1Path = hand.deck[card1];
-        String card2Path = hand.deck[card2];
-        String card3Path = hand.deck[card3];
-        String card4Path = hand.deck[card4];
-
-        Image card1Image = new Image(getClass().getResource(card1Path).toExternalForm());
-        card1View.setImage(card1Image);
-
-        Image card2Image = new Image(getClass().getResource(card2Path).toExternalForm());
-        card2View.setImage(card2Image);
-
-        Image card3Image = new Image(getClass().getResource(card3Path).toExternalForm());
-        card3View.setImage(card3Image);
-
-        Image card4Image = new Image(getClass().getResource(card4Path).toExternalForm());
-        card4View.setImage(card4Image);
-
-
 
     }
 
@@ -115,9 +128,10 @@ public class twentyfourCardController {
                 }
 
                 //Checking for double digits such as 11 12 or 13
-                if (userEquationArray[i] == '1' && i != userEquationArray.length - 1 ) {
-                    if (userEquationArray[i+1] > '3' || userEquationArray[i+1] < '0' || userEquationArray[i+1] == ' ' ){
-                        winnerLabel.setText("Invalid Number");
+                if (userEquationArray[i] == '1' && i != userEquationArray.length - 1 && (userEquationArray[i + 1] != '+' && userEquationArray[i + 1] != '-' &&
+                userEquationArray[i + 1] != '/' && userEquationArray[i + 1] != '*')) {
+                    if (userEquationArray[i+1] != '3' && userEquationArray[i+1] != '2'&& userEquationArray[i+1] != '1' && userEquationArray[i+1] != '0'){
+                        winnerLabel.setText("Error at double digits");
                     }
                     //Special clause for ace
                     if (userEquationArray[i+1] == ' '){
@@ -160,11 +174,99 @@ public class twentyfourCardController {
                     }
                 }
 
+            }
 
+            int sum = 0;
+            int num = 0;
+            int secondnum = 0;
+            char operator = ' ';
+            boolean newOperator = false;
+            boolean secondNumDbl = false;
+            boolean newEquation = false;
+
+            for(int i = 0; i < userEquationArray.length - 1; i++) {
+
+
+                if(secondNumDbl == true){
+                    secondNumDbl = false;
+                     continue;
+                }
+
+                if (Character.isDigit(userEquationArray[i])) {
+                    if (userEquationArray[i] == '1' && (userEquationArray[i + 1] == '0' || userEquationArray[i + 1] == '1' || userEquationArray[i + 1] == '2' || userEquationArray[i + 1] == '3') && userEquationArray[i + 1] != ' ') {
+                            num = 10 + Character.getNumericValue(userEquationArray[i + 1]);
+                            i++;
+                    } else {
+                        num = Character.getNumericValue(userEquationArray[i]);
+                    }
+                }
+
+
+                // Operator check
+                if (userEquationArray[i] == '+' || userEquationArray[i] == '-'
+                        || userEquationArray[i] == '/' || userEquationArray[i] == '*') {
+                    operator = userEquationArray[i];
+                    newOperator = true;
+                }
+
+                    //making sure I don't go out of bounds
+                    if (i + 1 < userEquationArray.length && Character.isDigit(userEquationArray[i + 1]) && (userEquationArray[i + 1] != '+' && userEquationArray[i] != '-'
+                            && userEquationArray[i] != '/' && userEquationArray[i] != '*')) {
+
+                        if (Character.isDigit(userEquationArray[i+1])) {
+                            if (userEquationArray[i+1] == '1' && (userEquationArray[i + 2] == '0' || userEquationArray[i + 2] == '1' || userEquationArray[i + 2] == '2' || userEquationArray[i + 2] == '3')) {
+                                secondnum = 10 + Character.getNumericValue(userEquationArray[i + 2]);
+                                secondNumDbl = true;
+
+                            } else{
+                                secondnum = Character.getNumericValue(userEquationArray[i+1]);
+                            }
+                            newEquation = true;
+                        }
+                    }
+
+
+
+
+
+                if(newOperator && newEquation) {
+                    switch (operator) {
+                        case '+':
+                            sum += num + secondnum;
+                            newEquation = false;
+                            num = 0; secondnum = 0;
+                            break;
+                        case '-':
+                            sum += num - secondnum;
+                            newEquation = false;
+                            num = 0; secondnum = 0;
+                            break;
+                        case '/':
+                            if (secondnum != 0) {
+                                sum += num / secondnum;
+                                newEquation = false;
+                                num = 0; secondnum = 0;
+                                break;
+                            }
+                        case '*':
+                            sum += num * secondnum;
+                            newEquation = false;
+                            num = 0; secondnum = 0;
+                            break;
+                    }
+                    newOperator = false;
+                }
+
+
+                if (sum == 24) {
+                    winnerLabel.setText("Congratulations you won!");
+                }
+
+                System.out.println("Sum is: " + sum);
             }
 
 
-            if(userEquation == 24){winnerLabel.setText("Congratulations you won!");}
+
 
 
 
