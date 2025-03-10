@@ -7,9 +7,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class twentyfourCardController {
     @FXML
@@ -109,170 +107,85 @@ public class twentyfourCardController {
 
     @FXML
     protected void onVerifyButtonClick() {
-
-        int userEquation = 0;
-        String userEquationString;
-
         try {
-
-            //checking to see if all characters are valid
-            userEquationString = equationText.getText();
-
+            String userEquationString = equationText.getText();
             char[] userEquationArray = userEquationString.toCharArray();
 
-            for (int i = 0; i < userEquationArray.length; i++) {
-
-                //checking if letters where inputted
-                if(userEquationArray[i] >= 'a' && userEquationArray[i] <= 'z' || userEquationArray[i] >= 'A' && userEquationArray[i] <= 'Z'){
-                    winnerLabel.setText("No letters!!!");
+            // making sure there is no letters
+            for (char c : userEquationArray) {
+                if (Character.isLetter(c)) {
+                    winnerLabel.setText("No letters allowed!");
+                    return;
                 }
-
-                //Checking for double digits such as 11 12 or 13
-                if (userEquationArray[i] == '1' && i != userEquationArray.length - 1 && (userEquationArray[i + 1] != '+' && userEquationArray[i + 1] != '-' &&
-                userEquationArray[i + 1] != '/' && userEquationArray[i + 1] != '*')) {
-                    if (userEquationArray[i+1] != '3' && userEquationArray[i+1] != '2'&& userEquationArray[i+1] != '1' && userEquationArray[i+1] != '0'){
-                        winnerLabel.setText("Error at double digits");
-                    }
-                    //Special clause for ace
-                    if (userEquationArray[i+1] == ' '){
-                        if(handMap.containsKey(1)){
-                            handMap.put(1,handMap.get(1)-1);
-                            if(handMap.get(1) < 0){winnerLabel.setText("Can't use duplicates!!!");}
-                        }
-                        else{winnerLabel.setText("Card is not valid !!!");}
-                    }
-
-                    // Checking for valid numbers and converting back to ints for double digit nums
-                    String intBuilder = String.valueOf(userEquationArray[i]);
-                    intBuilder += userEquationArray[i+1];
-                    int doubleNum = Integer.parseInt(intBuilder);
-
-                    if(handMap.containsKey(doubleNum)){
-                        handMap.put(doubleNum,handMap.get(doubleNum)-1);
-                        if(handMap.get(doubleNum) < 0){winnerLabel.setText("Can't use duplicates!!!");}
-                    }
-                    else{winnerLabel.setText("A Card is not valid !!!");}
-
-                    i++;
-                }
-
-                if(userEquationArray[i] >= '2' && userEquationArray[i] <= '9' ) {
-
-                    // Setting chars back to integers after check
-                    String intBuilder = String.valueOf(userEquationArray[i]);
-                    int soloNum = Integer.parseInt(intBuilder);
-
-                    if (handMap.containsKey(soloNum)) {
-                        handMap.put(soloNum, handMap.get(soloNum) - 1);
-                        if (handMap.get(soloNum) < 0) {
-                            winnerLabel.setText("Can't use duplicates!!!");
-                        }
-                    } else {
-
-                        winnerLabel.setText("A Card is not valid !!!");
-
-                    }
-                }
-
             }
 
-            int sum = 0;
-            int num = 0;
-            int secondnum = 0;
-            char operator = ' ';
-            boolean newOperator = false;
-            boolean secondNumDbl = false;
-            boolean newEquation = false;
+            // creating a list for integers and operators
+            List<Integer> numbers = new ArrayList<>();
+            List<Character> operators = new ArrayList<>();
 
-            for(int i = 0; i < userEquationArray.length - 1; i++) {
-
-
-                if(secondNumDbl == true){
-                    secondNumDbl = false;
-                     continue;
-                }
-
+            int i = 0;
+            while (i < userEquationArray.length) {
                 if (Character.isDigit(userEquationArray[i])) {
-                    if (userEquationArray[i] == '1' && (userEquationArray[i + 1] == '0' || userEquationArray[i + 1] == '1' || userEquationArray[i + 1] == '2' || userEquationArray[i + 1] == '3') && userEquationArray[i + 1] != ' ') {
-                            num = 10 + Character.getNumericValue(userEquationArray[i + 1]);
-                            i++;
-                    } else {
-                        num = Character.getNumericValue(userEquationArray[i]);
-                    }
-                }
+                    int num = Character.getNumericValue(userEquationArray[i]);
 
-
-                // Operator check
-                if (userEquationArray[i] == '+' || userEquationArray[i] == '-'
-                        || userEquationArray[i] == '/' || userEquationArray[i] == '*') {
-                    operator = userEquationArray[i];
-                    newOperator = true;
-                }
-
-                    //making sure I don't go out of bounds
-                    if (i + 1 < userEquationArray.length && Character.isDigit(userEquationArray[i + 1]) && (userEquationArray[i + 1] != '+' && userEquationArray[i] != '-'
-                            && userEquationArray[i] != '/' && userEquationArray[i] != '*')) {
-
-                        if (Character.isDigit(userEquationArray[i+1])) {
-                            if (userEquationArray[i+1] == '1' && (userEquationArray[i + 2] == '0' || userEquationArray[i + 2] == '1' || userEquationArray[i + 2] == '2' || userEquationArray[i + 2] == '3')) {
-                                secondnum = 10 + Character.getNumericValue(userEquationArray[i + 2]);
-                                secondNumDbl = true;
-
-                            } else{
-                                secondnum = Character.getNumericValue(userEquationArray[i+1]);
-                            }
-                            newEquation = true;
-                        }
+                    // special case for 10-13
+                    if (i + 1 < userEquationArray.length && Character.isDigit(userEquationArray[i + 1])) {
+                        num = num * 10 + Character.getNumericValue(userEquationArray[i + 1]);
+                        i++;
                     }
 
-
-
-
-
-                if(newOperator && newEquation) {
-                    switch (operator) {
-                        case '+':
-                            sum += num + secondnum;
-                            newEquation = false;
-                            num = 0; secondnum = 0;
-                            break;
-                        case '-':
-                            sum += num - secondnum;
-                            newEquation = false;
-                            num = 0; secondnum = 0;
-                            break;
-                        case '/':
-                            if (secondnum != 0) {
-                                sum += num / secondnum;
-                                newEquation = false;
-                                num = 0; secondnum = 0;
-                                break;
-                            }
-                        case '*':
-                            sum += num * secondnum;
-                            newEquation = false;
-                            num = 0; secondnum = 0;
-                            break;
+                    // making sure the numbers are allowed
+                    if (!handMap.containsKey(num) || handMap.get(num) <= 0) {
+                        winnerLabel.setText("A Card is not valid or used multiple times!");
+                        return;
                     }
-                    newOperator = false;
+                    handMap.put(num, handMap.get(num) - 1); // Use the number
+                    numbers.add(num);
                 }
-
-
-                if (sum == 24) {
-                    winnerLabel.setText("Congratulations you won!");
+                else if (userEquationArray[i] == '+' || userEquationArray[i] == '-' ||
+                        userEquationArray[i] == '*' || userEquationArray[i] == '/') {
+                    operators.add(userEquationArray[i]);
                 }
+                i++;
+            }
 
-                System.out.println("Sum is: " + sum);
+           //computing  the results with order of operations in mind
+            for (int j = 0; j < operators.size(); j++) {
+                if (operators.get(j) == '*' || operators.get(j) == '/') {
+                    int left = numbers.get(j);
+                    int right = numbers.get(j + 1);
+                    int result = (operators.get(j) == '*') ? left * right : (right != 0 ? left / right : 0);
+
+                    numbers.set(j, result);
+                    numbers.remove(j + 1);
+                    operators.remove(j);
+                    j--;
+                }
+            }
+
+            // now checking + and -
+            int sum = numbers.get(0);
+            for (int j = 0; j < operators.size(); j++) {
+                if (operators.get(j) == '+') {
+                    sum += numbers.get(j + 1);
+                } else {
+                    sum -= numbers.get(j + 1);
+                }
             }
 
 
+            if (sum == 24) {
+                winnerLabel.setText("Congratulations, you won!");
+            } else {
+                winnerLabel.setText("Incorrect solution. Try again!");
+            }
 
-
-
-
-        }catch(NumberFormatException e){
-
+            System.out.println("Sum is: " + sum);
+        } catch (Exception e) {
+            e.printStackTrace();
+            winnerLabel.setText("Invalid input format!");
         }
+    }
 
 
 
@@ -282,7 +195,7 @@ public class twentyfourCardController {
 
 //        System.out.println(hand.numValueOfDeck[card1]+ " | " + hand.numValueOfDeck[card2]);
 //        System.out.println(hand.numValueOfDeck[card3]+ " | " + hand.numValueOfDeck[card4]);
-    }
+
 
 
     @FXML
